@@ -1,1 +1,43 @@
+interface Location {
+  name: string;
+}
+
+interface Trip {
+  pickups: Location[];
+  dropoffs: Location[];
+  warehouse?: Location;
+}
+
+interface Shipment {
+  pickups: Location[];
+  dropoffs: Location[];
+}
+
+function validateTrips(shipment: Shipment, trips: Trip[]): boolean {
+  const allLocations = [...shipment.pickups, ...shipment.dropoffs];
+
+  const visitedLocations = trips.flatMap(trip => [...trip.pickups, ...trip.dropoffs, trip.warehouse || []]);
+
+  const allLocationsSet = new Set(allLocations.map(loc => loc.name));
+  const visitedLocationsSet = new Set(visitedLocations.map(loc => loc.name));
+  if (allLocationsSet.size !== visitedLocationsSet.size) return false;
+
+  for (const trip of trips) {
+    const firstLocation = trip.pickups[0] || trip.warehouse;
+    const lastLocation = trip.dropoffs[trip.dropoffs.length - 1];
+
+    if (!firstLocation || !lastLocation) return false;
+
+    if (!allLocationsSet.has(firstLocation.name) &&
+        !trip.pickups.some(p => p.name === firstLocation.name) &&
+        !(trip.warehouse && trip.warehouse.name === firstLocation.name)) return false;
+
+    if (!allLocationsSet.has(lastLocation.name) &&
+        !trip.dropoffs.some(d => d.name === lastLocation.name)) return false;
+  }
+
+  return true;
+}
+
+
 
