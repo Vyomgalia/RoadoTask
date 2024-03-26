@@ -1,0 +1,26 @@
+// IT USES REDUCE AND ARROW FUNCTIONS 
+
+interface UserActivity {
+  userId: string;
+  loggedIn: Date;
+  loggedOut?: Date;
+  lastSeenAt: Date;
+}
+
+function getMonthlyStats(userActivities: UserActivity[], month: Date): { loggedIn: number; active: number } {
+  const filteredActivities = userActivities.filter(
+    (activity) => activity.loggedIn.getMonth() === month.getMonth() && activity.loggedIn.getFullYear() === month.getFullYear()
+  );
+
+  const loggedIn = new Set(filteredActivities.map((activity) => activity.userId));
+  const active = new Set(
+    filteredActivities.reduce((acc, activity) => {
+      if (!activity.loggedOut || activity.loggedOut > month || activity.lastSeenAt > month) {
+        acc.add(activity.userId);
+      }
+      return acc;
+    }, new Set<string>())
+  );
+
+  return { loggedIn: loggedIn.size, active: active.size };
+}
